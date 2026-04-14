@@ -2,6 +2,7 @@ import {
   InternalSession,
   InternalParticipant,
   VotingScale,
+  SessionMode,
   SessionState,
   Story,
   Vote,
@@ -33,7 +34,7 @@ class SessionStore {
   // Session lifecycle
   // ---------------------------------------------------------------------------
 
-  createSession(name: string, scale: VotingScale): InternalSession {
+  createSession(name: string, scale: VotingScale, mode: SessionMode = 'stories'): InternalSession {
     let id: string;
     do {
       id = generateSessionId();
@@ -44,7 +45,9 @@ class SessionStore {
       name,
       scrum_master_id: '',
       voting_scale: scale,
-      status: 'waiting',
+      session_mode: mode,
+      round_number: 1,
+      status: mode === 'free' ? 'voting' : 'waiting',
       current_story_id: null,
       stories: new Map(),
       participants: new Map(),
@@ -70,6 +73,8 @@ class SessionStore {
       name: session.name,
       scrum_master_id: session.scrum_master_id,
       voting_scale: session.voting_scale,
+      session_mode: session.session_mode,
+      round_number: session.round_number,
       status: session.status,
       current_story_id: session.current_story_id,
       stories: Array.from(session.stories.values()),
@@ -192,13 +197,15 @@ class SessionStore {
     };
   }
 
-  resetRound(session: InternalSession): void {
+  resetRound(session: InternalSession): number {
     session.votes.clear();
+    session.round_number += 1;
     session.status = 'voting';
     for (const participant of session.participants.values()) {
       participant.has_voted = false;
     }
     session.last_activity = Date.now();
+    return session.round_number;
   }
 
   private startVoting(session: InternalSession): void {

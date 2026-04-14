@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { sessionStore } from '../session-store';
-import { InternalParticipant, ParticipantRole, VOTING_SCALES, VotingScaleId } from '../types';
+import { InternalParticipant, ParticipantRole, SessionMode, VOTING_SCALES, VotingScaleId } from '../types';
 import { generateId, sanitize, sanitizeText } from '../utils';
 import { rateLimiter } from '../rate-limiter';
 
@@ -23,23 +23,25 @@ export function registerHandlers(io: Server, socket: Socket): void {
 
   // ---------------------------------------------------------------------------
   // create_session
-  // Payload: { name, voting_scale_id, display_name }
+  // Payload: { name, voting_scale_id, session_mode, display_name }
   // ---------------------------------------------------------------------------
   socket.on('create_session', (data: {
     name?: string;
     voting_scale_id?: string;
+    session_mode?: string;
     display_name?: string;
   }) => {
     const name = sanitize(data.name ?? '');
     const display_name = sanitize(data.display_name ?? '');
     const scale = VOTING_SCALES[data.voting_scale_id as VotingScaleId];
+    const mode: SessionMode = data.session_mode === 'free' ? 'free' : 'stories';
 
     if (!name || !display_name || !scale) {
       emitError(socket, 'INVALID_INPUT', 'name, display_name, and a valid voting_scale_id are required');
       return;
     }
 
-    const session = sessionStore.createSession(name, scale);
+    const session = sessionStore.createSession(name, scale, mode);
     const participant_id = generateId();
 
     const participant: InternalParticipant = {
@@ -195,8 +197,8 @@ export function registerHandlers(io: Server, socket: Socket): void {
       return;
     }
 
-    sessionStore.resetRound(session);
-    io.to(session.id).emit('round_reset', { story_id: session.current_story_id });
+    const round_number = sessionStore.resetRound(session);
+    io.to(session.id).emit('round_reset', { round_number });
   });
 
   // ---------------------------------------------------------------------------

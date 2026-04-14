@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { sessionStore } from '../session-store';
-import { VOTING_SCALES, VotingScaleId } from '../types';
+import { SessionMode, VOTING_SCALES, VotingScaleId } from '../types';
 import { sanitize } from '../utils';
 
 const router = Router();
@@ -8,11 +8,15 @@ const router = Router();
 /**
  * POST /api/sessions
  * Create a new session over HTTP (alternative to the create_session socket event).
- * Body: { name: string; voting_scale_id: 'fibonacci' | 'tshirt' }
+ * Body: { name: string; voting_scale_id: 'fibonacci' | 'tshirt'; session_mode?: 'stories' | 'free' }
  * Response: { session_id: string }
  */
 router.post('/', (req: Request, res: Response) => {
-  const { name, voting_scale_id } = req.body as { name?: unknown; voting_scale_id?: unknown };
+  const { name, voting_scale_id, session_mode } = req.body as {
+    name?: unknown;
+    voting_scale_id?: unknown;
+    session_mode?: unknown;
+  };
 
   if (typeof name !== 'string' || !name.trim()) {
     res.status(400).json({ error: 'name is required and must be a non-empty string' });
@@ -31,7 +35,8 @@ router.post('/', (req: Request, res: Response) => {
     return;
   }
 
-  const session = sessionStore.createSession(sanitizedName, scale);
+  const mode: SessionMode = session_mode === 'free' ? 'free' : 'stories';
+  const session = sessionStore.createSession(sanitizedName, scale, mode);
   res.status(201).json({ session_id: session.id });
 });
 
@@ -51,6 +56,7 @@ router.get('/:id', (req: Request, res: Response) => {
     id: session.id,
     name: session.name,
     voting_scale: session.voting_scale,
+    session_mode: session.session_mode,
     participant_count: session.participants.size,
     status: session.status,
   });
