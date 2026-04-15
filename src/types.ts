@@ -20,7 +20,7 @@ export const VOTING_SCALES: Record<VotingScaleId, VotingScale> = {
   },
 };
 
-export type ParticipantRole = 'scrum_master' | 'team_member' | 'observer';
+export type ParticipantRole = 'moderator' | 'team_member' | 'observer';
 export type SessionStatus = 'waiting' | 'voting' | 'revealed';
 export type StoryStatus = 'pending' | 'active' | 'estimated';
 
@@ -56,7 +56,7 @@ export interface RoundResult {
 export interface SessionState {
   id: string;
   name: string;
-  scrum_master_id: string;
+  moderator_id: string;
   voting_scale: VotingScale;
   session_mode: SessionMode;
   round_number: number;
@@ -76,7 +76,7 @@ export interface InternalParticipant extends Participant {
 export interface InternalSession {
   id: string;
   name: string;
-  scrum_master_id: string;
+  moderator_id: string;
   voting_scale: VotingScale;
   session_mode: SessionMode;
   round_number: number;

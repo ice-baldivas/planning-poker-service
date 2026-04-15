@@ -47,13 +47,13 @@ export function registerHandlers(io: Server, socket: Socket): void {
     const participant: InternalParticipant = {
       id: participant_id,
       display_name,
-      role: 'scrum_master',
+      role: 'moderator',
       is_connected: true,
       has_voted: false,
       socket_id: socket.id,
     };
 
-    session.scrum_master_id = participant_id;
+    session.moderator_id = participant_id;
     sessionStore.addParticipant(session, participant);
 
     socket.join(session.id);
@@ -166,15 +166,15 @@ export function registerHandlers(io: Server, socket: Socket): void {
   });
 
   // ---------------------------------------------------------------------------
-  // reveal_votes  (Scrum Master only)
+  // reveal_votes  (Moderator only)
   // ---------------------------------------------------------------------------
   socket.on('reveal_votes', () => {
     const lookup = sessionStore.getParticipantBySocket(socket.id);
     if (!lookup) { emitError(socket, 'NOT_IN_SESSION', 'Not in a session'); return; }
     const { session, participant } = lookup;
 
-    if (participant.role !== 'scrum_master') {
-      emitError(socket, 'FORBIDDEN', 'Only the Scrum Master can reveal votes');
+    if (participant.role !== 'moderator') {
+      emitError(socket, 'FORBIDDEN', 'Only the Moderator can reveal votes');
       return;
     }
 
@@ -185,15 +185,15 @@ export function registerHandlers(io: Server, socket: Socket): void {
   });
 
   // ---------------------------------------------------------------------------
-  // reset_round  (Scrum Master only)
+  // reset_round  (Moderator only)
   // ---------------------------------------------------------------------------
   socket.on('reset_round', () => {
     const lookup = sessionStore.getParticipantBySocket(socket.id);
     if (!lookup) { emitError(socket, 'NOT_IN_SESSION', 'Not in a session'); return; }
     const { session, participant } = lookup;
 
-    if (participant.role !== 'scrum_master') {
-      emitError(socket, 'FORBIDDEN', 'Only the Scrum Master can reset the round');
+    if (participant.role !== 'moderator') {
+      emitError(socket, 'FORBIDDEN', 'Only the Moderator can reset the round');
       return;
     }
 
@@ -202,7 +202,7 @@ export function registerHandlers(io: Server, socket: Socket): void {
   });
 
   // ---------------------------------------------------------------------------
-  // add_story  (Scrum Master only)
+  // add_story  (Moderator only)
   // Payload: { title, description? }
   // ---------------------------------------------------------------------------
   socket.on('add_story', (data: { title?: string; description?: string }) => {
@@ -210,8 +210,8 @@ export function registerHandlers(io: Server, socket: Socket): void {
     if (!lookup) { emitError(socket, 'NOT_IN_SESSION', 'Not in a session'); return; }
     const { session, participant } = lookup;
 
-    if (participant.role !== 'scrum_master') {
-      emitError(socket, 'FORBIDDEN', 'Only the Scrum Master can add stories');
+    if (participant.role !== 'moderator') {
+      emitError(socket, 'FORBIDDEN', 'Only the Moderator can add stories');
       return;
     }
 
@@ -224,7 +224,7 @@ export function registerHandlers(io: Server, socket: Socket): void {
   });
 
   // ---------------------------------------------------------------------------
-  // set_active_story  (Scrum Master only)
+  // set_active_story  (Moderator only)
   // Payload: { story_id }
   // ---------------------------------------------------------------------------
   socket.on('set_active_story', (data: { story_id?: string }) => {
@@ -232,8 +232,8 @@ export function registerHandlers(io: Server, socket: Socket): void {
     if (!lookup) { emitError(socket, 'NOT_IN_SESSION', 'Not in a session'); return; }
     const { session, participant } = lookup;
 
-    if (participant.role !== 'scrum_master') {
-      emitError(socket, 'FORBIDDEN', 'Only the Scrum Master can set the active story');
+    if (participant.role !== 'moderator') {
+      emitError(socket, 'FORBIDDEN', 'Only the Moderator can set the active story');
       return;
     }
 
@@ -252,8 +252,8 @@ export function registerHandlers(io: Server, socket: Socket): void {
     if (!lookup) { emitError(socket, 'NOT_IN_SESSION', 'Not in a session'); return; }
     const { session, participant } = lookup;
 
-    if (participant.role !== 'scrum_master') {
-      emitError(socket, 'FORBIDDEN', 'Only the Scrum Master can finalize stories');
+    if (participant.role !== 'moderator') {
+      emitError(socket, 'FORBIDDEN', 'Only the Moderator can finalize stories');
       return;
     }
 
@@ -275,8 +275,8 @@ export function registerHandlers(io: Server, socket: Socket): void {
     if (!lookup) { emitError(socket, 'NOT_IN_SESSION', 'Not in a session'); return; }
     const { session, participant } = lookup;
 
-    if (participant.role !== 'scrum_master') {
-      emitError(socket, 'FORBIDDEN', 'Only the Scrum Master can transfer the role');
+    if (participant.role !== 'moderator') {
+      emitError(socket, 'FORBIDDEN', 'Only the Moderator can transfer the role');
       return;
     }
 
@@ -300,7 +300,7 @@ export function registerHandlers(io: Server, socket: Socket): void {
 
     io.to(mapping.session_id).emit('participant_left', { participant_id: mapping.participant_id });
 
-    if (session.scrum_master_id !== mapping.participant_id) return;
+    if (session.moderator_id !== mapping.participant_id) return;
 
     // SM disconnected — wait 60 s before auto-transferring the role.
     setTimeout(() => {

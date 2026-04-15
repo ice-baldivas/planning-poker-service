@@ -43,7 +43,7 @@ class SessionStore {
     const session: InternalSession = {
       id,
       name,
-      scrum_master_id: '',
+      moderator_id: '',
       voting_scale: scale,
       session_mode: mode,
       round_number: 1,
@@ -71,7 +71,7 @@ class SessionStore {
     return {
       id: session.id,
       name: session.name,
-      scrum_master_id: session.scrum_master_id,
+      moderator_id: session.moderator_id,
       voting_scale: session.voting_scale,
       session_mode: session.session_mode,
       round_number: session.round_number,
@@ -148,10 +148,10 @@ class SessionStore {
   transferSM(session: InternalSession, new_sm_id: string): boolean {
     const newSM = session.participants.get(new_sm_id);
     if (!newSM) return false;
-    const oldSM = session.participants.get(session.scrum_master_id);
+    const oldSM = session.participants.get(session.moderator_id);
     if (oldSM) oldSM.role = 'team_member';
-    newSM.role = 'scrum_master';
-    session.scrum_master_id = new_sm_id;
+    newSM.role = 'moderator';
+    session.moderator_id = new_sm_id;
     session.last_activity = Date.now();
     return true;
   }
