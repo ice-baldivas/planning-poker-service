@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "npm run build && node --test tests/*.test.cjs",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon"

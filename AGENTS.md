@@ -7,7 +7,7 @@ Express 5 + Socket.IO 4 backend for the planning poker app. The Angular frontend
 - `npm run dev` — nodemon + ts-node, watches `src/**/*.ts`
 - `npm run build` — `tsc` to `dist/`
 - `npm start` — `node dist/index.js`
-- **No tests exist** and there is no test script.
+- `npm test` — builds TypeScript, then runs Node's built-in tests in `tests/*.test.cjs` (session store and socket handlers).
 
 TypeScript strict mode, **CommonJS** modules (keep imports/exports CJS-compatible).
 
