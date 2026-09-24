@@ -1,10 +1,10 @@
-export type VotingScaleId = 'fibonacci' | 'tshirt'
-export type SessionMode = 'stories' | 'free'
+export type VotingScaleId = 'fibonacci' | 'tshirt';
+export type SessionMode = 'stories' | 'free';
 
 export interface VotingScale {
-  id: VotingScaleId
-  name: string
-  cards: string[]
+  id: VotingScaleId;
+  name: string;
+  cards: string[];
 }
 
 export const VOTING_SCALES: Record<VotingScaleId, VotingScale> = {
@@ -18,75 +18,78 @@ export const VOTING_SCALES: Record<VotingScaleId, VotingScale> = {
     name: 'T-Shirt Sizes',
     cards: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '?'],
   },
-}
+};
 
-export type ParticipantRole = 'moderator' | 'team_member' | 'observer'
-export type SessionStatus = 'waiting' | 'voting' | 'revealed'
-export type StoryStatus = 'pending' | 'active' | 'estimated'
+export type ParticipantRole = 'moderator' | 'team_member' | 'observer';
+export type SessionStatus = 'waiting' | 'voting' | 'revealed';
+export type StoryStatus = 'pending' | 'active' | 'estimated';
 
 export interface Participant {
-  id: string
-  display_name: string
-  role: ParticipantRole
-  is_connected: boolean
-  has_voted: boolean
+  id: string;
+  display_name: string;
+  role: ParticipantRole;
+  is_connected: boolean;
+  has_voted: boolean;
 }
 
 export interface Story {
-  id: string
-  title: string
-  description?: string
-  status: StoryStatus
-  final_estimate?: string
+  id: string;
+  title: string;
+  description?: string;
+  status: StoryStatus;
+  final_estimate?: string;
 }
 
 export interface Vote {
-  participant_id: string
-  card_value: string
-  submitted_at: string
+  participant_id: string;
+  card_value: string;
+  submitted_at: string;
 }
 
 export interface RoundResult {
-  votes: { participant_id: string; display_name: string; card_value: string }[]
-  consensus: boolean
-  consensus_value: string | null
+  votes: { participant_id: string; display_name: string; card_value: string }[];
+  consensus: boolean;
+  consensus_value: string | null;
 }
 
 /** Client-facing session state — vote values are never included. */
 export interface SessionState {
-  id: string
-  name: string
-  moderator_id: string
-  voting_scale: VotingScale
-  session_mode: SessionMode
-  round_number: number
-  status: SessionStatus
-  current_story_id: string | null
-  stories: Story[]
-  participants: Participant[]
-  created_at: string
+  auto_reveal: boolean;
+  id: string;
+  name: string;
+  moderator_id: string;
+  voting_scale: VotingScale;
+  session_mode: SessionMode;
+  round_number: number;
+  status: SessionStatus;
+  current_story_id: string | null;
+  stories: Story[];
+  participants: Participant[];
+  created_at: string;
 }
 
 /** Internal participant record — includes the active socket ID. */
 export interface InternalParticipant extends Participant {
-  socket_id: string | null
+  socket_id: string | null;
   /** Timestamp (ms) when the participant disconnected; cleared on reconnect. */
-  disconnected_at?: number
+  disconnected_at?: number;
 }
 
 /** Internal session — holds vote values server-side only. */
 export interface InternalSession {
-  id: string
-  name: string
-  moderator_id: string
-  voting_scale: VotingScale
-  session_mode: SessionMode
-  round_number: number
-  status: SessionStatus
-  current_story_id: string | null
-  stories: Map<string, Story>
-  participants: Map<string, InternalParticipant>
-  votes: Map<string, Vote> // keyed by participant_id
-  created_at: string
-  last_activity: number
+  auto_reveal: boolean;
+  revealed_result: RoundResult | null;
+  id: string;
+  name: string;
+  moderator_id: string;
+  voting_scale: VotingScale;
+  session_mode: SessionMode;
+  round_number: number;
+  status: SessionStatus;
+  current_story_id: string | null;
+  stories: Map<string, Story>;
+  participants: Map<string, InternalParticipant>;
+  votes: Map<string, Vote>; // keyed by participant_id
+  created_at: string;
+  last_activity: number;
 }
